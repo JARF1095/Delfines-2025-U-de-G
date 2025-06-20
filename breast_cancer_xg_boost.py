@@ -89,8 +89,8 @@ dtest = XGBClassifier.DMatrix(X_test, label = y_test)
 param = {
     # Hiperparámetros especificados en la tabla
     'max_depth': 6,                  # Maximum depth d of each tree (default: 6)
-    'learning_rate': 0.3,            # eta: Weight of each new tree (default: 0.3)
-    'n_estimators': 100,             # K: Total number of trees (default: 100)
+    'learning_rate': 0.4,            # eta: Weight of each new tree (default: 0.3)
+    'n_estimators': 50,             # K: Total number of trees (default: 50)
     'gamma': 0,                      # gamma: Minimum loss reduction to make split (default: 0)
     'min_child_weight': 1,           # w_min: Minimum sum of instance weight needed in child (default: 1)
     'subsample': 1.0,                # Fraction of data randomly sampled for each tree (default: 1.0)
@@ -143,11 +143,11 @@ metricsXGB = pd.DataFrame({'metric':['AUC','Gini','Accuracy','Precision','Recall
                                         recall_score(y_test, X_test.prediction),
                                         f1_score(y_test, X_test.prediction)]})
 
-# Specificity
+# Accuracy
 tn, fp, fn, tp = confusion_matrix(y_test, X_test.prediction).ravel()
 
 print(confusion_matrix(y_test, X_test.prediction))
 
 accuracy = (tp + tn)/(tn + fp + tp + fn)
-print('Test Specificity: ', accuracy)
+print('Test Accuracy: ', accuracy)
 

@@ -95,7 +95,7 @@ toolbox.register("evaluate", evalXGB)
 
 # Configuración del algoritmo genético
 population_size = 20
-num_generations = 15
+num_generations = 40
 cx_prob = 0.7
 mut_prob = 0.3
 
@@ -188,24 +188,17 @@ metricsXGB = pd.DataFrame({
 print("\nMétricas de performance:")
 print(metricsXGB)
 
-# Specificity
+# Accuracy
+
 tn, fp, fn, tp = confusion_matrix(y_test, test_preds).ravel()
-specificity = tn/(tn+fp)
-print('\nTest Specificity:', specificity)
+
+print(confusion_matrix(y_test, test_preds))
+
+accuracy = (tp + tn)/(tn + fp + tp + fn)
+print('Test Accuracy: ', accuracy)
 
 # Importancia de las variables
-importance = best_model.get_booster().get_score(importance_type='total_gain')
-pdVarImp = pd.DataFrame({
-    'Feature': list(importance.keys()),
-    'Importance': list(importance.values())
-}).sort_values('Importance', ascending=False)
 
-pdVarImp['Orden'] = np.arange(len(pdVarImp)) + 1
-pdVarImp['porc_gain'] = pdVarImp.Importance.apply(lambda x: x/pdVarImp.Importance.sum())
-pdVarImp['porc_gain_acum'] = pdVarImp.porc_gain.cumsum(axis=0)
-
-print("\nTop 10 variables más importantes:")
-print(pdVarImp.head(10))
 
 # Parámetros finales del modelo
 print("\nParámetros finales del modelo:")
@@ -214,13 +207,13 @@ print(best_model.get_params())
 # Gráfico de evolución del algoritmo genético
 gen = logbook.select("gen")
 avg = logbook.select("avg")
-min_ = logbook.select("min")
-max_ = logbook.select("max")
+# min_ = logbook.select("min")
+# max_ = logbook.select("max")
 
 plt.figure(figsize=(10, 6))
 plt.plot(gen, avg, label="Promedio")
-plt.plot(gen, min_, label="Mínimo")
-plt.plot(gen, max_, label="Máximo")
+# plt.plot(gen, min_, label="Mínimo")
+# plt.plot(gen, max_, label="Máximo")
 plt.xlabel("Generación")
 plt.ylabel("Accuracy")
 plt.title("Evolución del Fitness (Accuracy) en el Algoritmo Genético")
