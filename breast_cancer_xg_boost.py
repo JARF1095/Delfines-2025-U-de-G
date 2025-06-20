@@ -24,24 +24,6 @@ warnings.filterwarnings(action='ignore', message='^internal gelsd')
 df = pd.read_csv('data.csv')
 
 
-# Validación
-df.shape
-
-# Vista general del dataset
-df.info()
-
-# Se observa: variables numéricas excepto el target(diagnosis)
-# Variables como id y unamed no entran en el análisis
-
-"""## Análisis del Target
-
-"""
-
-sns.countplot(x='diagnosis', data=df, palette ='hls')
-
-# No se observa un desbalanceo de datos
-# Debe pasarse a variable numérica para ser analizada
-
 # Conteo de valores de la variable objetivo
 df['diagnosis'].value_counts()
 
@@ -94,53 +76,42 @@ dtrain = XGBClassifier.DMatrix(X_train, label = y_train)
 dwatch = XGBClassifier.DMatrix(X_watch, label = y_watch)
 dtest = XGBClassifier.DMatrix(X_test, label = y_test)
 
-# Definiendo parámetros
-param ={'objective': 'binary:logistic', # Tipo de aprendizaje
-          'max_depth': 2, # Profundidad del árbol
-          'learning_rate': 0.15,
-          'min_data_leaf': 0.05, # Min data en cada hoja
-          'grow_policy': 'lossguide', #Aprendizaje por error
-          'eval_metric': 'error' # Para evaluar el modelo
-          #'seed': 123
-          }
+# Definiendo parámetros (Aqui deben cambiar los alumnos)
+# param ={'objective': 'binary:logistic', # Tipo de aprendizaje
+#           'max_depth': 2, # Profundidad del árbol
+#           'learning_rate': 0.15,
+#           'min_data_leaf': 0.05, # Min data en cada hoja
+#           'grow_policy': 'lossguide', #Aprendizaje por error
+#           'eval_metric': 'error' # Para evaluar el modelo
+#           #'seed': 123
+#           }
+
+param = {
+    # Hiperparámetros especificados en la tabla
+    'max_depth': 6,                  # Maximum depth d of each tree (default: 6)
+    'learning_rate': 0.3,            # eta: Weight of each new tree (default: 0.3)
+    'n_estimators': 100,             # K: Total number of trees (default: 100)
+    'gamma': 0,                      # gamma: Minimum loss reduction to make split (default: 0)
+    'min_child_weight': 1,           # w_min: Minimum sum of instance weight needed in child (default: 1)
+    'subsample': 1.0,                # Fraction of data randomly sampled for each tree (default: 1.0)
+    'colsample_bytree': 1.0,         # Fraction of features randomly sampled for each tree (default: 1.0)
+    
+    # Parámetros básicos adicionales
+    'objective': 'binary:logistic',  # Tipo de problema
+    'eval_metric': 'error',          # Métrica de evaluación
+    'seed': 42,                      # Semilla aleatoria
+    
+    # Parámetros de regularización
+    'reg_alpha': 0,                  # Regularización L1
+    'reg_lambda': 1,                 # Regularización L2
+}
 num_round = 500
-evallist = [(dtrain,'train'), (dwatch,'watchlist')]
+evallist = [(dtrain,'train'), (dwatch,'watchlist')]  # Necesario para el early stopping rounds
 
 # Entrenando el algoritmo
-
-# 
 xgBoost = XGBClassifier.train(param, dtrain, num_round, evallist,
                     early_stopping_rounds=5)
 
-
-
-"""### Variables del modelo
-
-"""
-
-# Importancia de las variables con .get_score()
-# importance = xgBoost.get_score(importance_type = 'total_gain')
-# importance
-
-# total_gain: Sum tot de las ganancias de cada variable
-
-# XGBClassifier.plot_importance(xgBoost, max_num_features=20, importance_type='total_gain')
-
-# # Ordenando
-# pdVarImp = pd.DataFrame({'Feature': list(importance.keys()),
-#                          'Importance': list(importance.values())}).sort_values('Importance', ascending = False)
-
-# pdVarImp['Orden'] = np.arange(len(pdVarImp)) + 1
-# pdVarImp
-
-# # Suma de los valores de ganancia
-# plt.plot(pdVarImp.Orden, pdVarImp.Importance.cumsum(axis=0))
-
-# # Reescalando
-# pdVarImp['porc_gain'] = pdVarImp.Importance.apply(lambda x: x/pdVarImp.Importance.sum())
-# plt.plot(pdVarImp.Orden, pdVarImp.porc_gain.cumsum(axis=0))
-
-# pdVarImp['porc_gain_acum'] = pdVarImp.porc_gain.cumsum(axis = 0)
 
 
 
@@ -172,13 +143,11 @@ metricsXGB = pd.DataFrame({'metric':['AUC','Gini','Accuracy','Precision','Recall
                                         recall_score(y_test, X_test.prediction),
                                         f1_score(y_test, X_test.prediction)]})
 
-print(metricsXGB)
-
 # Specificity
 tn, fp, fn, tp = confusion_matrix(y_test, X_test.prediction).ravel()
 
 print(confusion_matrix(y_test, X_test.prediction))
 
-specificity = tn/(tn+fp)
-print('Test Specificity: ', specificity)
+accuracy = (tp + tn)/(tn + fp + tp + fn)
+print('Test Specificity: ', accuracy)
 
